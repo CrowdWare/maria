@@ -14,5 +14,4 @@ DATA REGISTRATION
 | How did you get here | Zen Magazine article | website | a friend
 | First contact date | 11 month 2000 | 13 month 1999 | 22 month 2001
 | Notes | Lorem ipsum dolor
-| 
 
