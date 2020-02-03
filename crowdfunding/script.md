@@ -32,4 +32,7 @@ Designers will be payed 75,- € per hour.
 |:--|--:|
 | General Donation | > 1,- € |
 | Commercial License | 500,- € |
-| More Todo ||
+| First Evaluation Consult | 60,- € |
+| Vibrational Oils Massage (exclusiv 20,- € for Oils)| 60,- € |
+| NLP Session | 60,- € |
+| EFT Session | 60,- € |
