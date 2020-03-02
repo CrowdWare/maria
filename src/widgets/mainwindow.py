@@ -22,6 +22,7 @@ import os
 import inspect
 import pathlib
 import sys
+import re
 import shutil
 from datetime import datetime
 from importlib import import_module
@@ -64,12 +65,13 @@ class MainWindow(QMainWindow):
 
         content_box = QVBoxLayout()
         filter_label = QLabel("Filter")
-        filter = QLineEdit()
+        self.filter = QLineEdit()
+        self.filter.textChanged.connect(self.filterChanged)
         self.client_list = QListWidget()
         self.client_list.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
         
         content_box.addWidget(filter_label)
-        content_box.addWidget(filter)
+        content_box.addWidget(self.filter)
         content_box.addWidget(self.client_list)
         self.content.addLayout(content_box)
 
@@ -103,23 +105,9 @@ class MainWindow(QMainWindow):
         self.showDock.clicked.connect(self.showMenu)
         self.navigationdock.visibilityChanged.connect(self.dockVisibilityChanged)
 
-    def loadDatabase(self):
-        self.connection = MongoClient("mongodb://localhost:27017/")
-        self.db = self.connection["Maria"]
-
-    def loadClients(self):
-        clients = self.db["Clients"]
-
-        self.client_list.clear()
-        for c in clients.find(): #{"name": {"$regex": u"Hans"}}):
-            item = QListWidgetItem()
-            item.setText(c["name"])
-            item.setData(3, c["_id"])
-            self.client_list.addItem(item)
-
     def showDashboard(self):
         db = Dashboard()
-        db.createSite.connect(self.createSite)
+        db.createSite.connect(self.addClient)
         self.setCentralWidget(db)
 
     def setCentralWidget(self, widget):
@@ -221,14 +209,40 @@ class MainWindow(QMainWindow):
             self.previewSite(self.content_after_animation)
             self.content_after_animation = None
 
-    def createSite(self):
+    def filterChanged(self):
+        self.loadClients()
+
+    def loadDatabase(self):
+        self.connection = MongoClient("mongodb://localhost:27017/")
+        self.db = self.connection["Maria"]
+
+    def loadClients(self):
+        clients = self.db["Clients"]
+
+        self.client_list.clear()
+        filter = self.filter.text()
+         
+        for c in clients.find({"name": re.compile(filter, re.IGNORECASE)}):
+            item = QListWidgetItem()
+            item.setText(c["name"])
+            item.setData(3, c["_id"])
+            self.client_list.addItem(item)
+
+    def addClient(self):
         clients = self.db["Clients"]
       
         newclient = {
-            "name": "Dirk Müller", 
-            "description": "Lorem ipsum dolor", 
-            "tags": ["heart", "lung"], 
-            "dateOfBirth": datetime(1963, 11, 20)
+            "name": "Vemg Nim", 
+            "birthdate": datetime(1963, 11, 20),
+            "profession": "School Teacher",
+            "address": "Rxc Nxbut, 00, 1700 Loreum",
+            "mobil": "+000 111111",
+            "email": "jhgia@xxx.com",
+            "reason": "Buy products",
+            "fiscal": "12345",
+            "how": "Zen Magazine article",
+            "firstContact": datetime(2020, 7, 23),
+            "notes": "Lorem ipsum dolor"
         }
         clients.insert_one(newclient)
 
