@@ -23,14 +23,16 @@ import inspect
 import pathlib
 import sys
 import shutil
+from datetime import datetime
 from importlib import import_module
 from widgets.flatbutton import FlatButton
 from widgets.expander import Expander
 from widgets.hyperlink import HyperLink
 from widgets.dashboard import Dashboard
-from PyQt5.QtWidgets import QMessageBox, QVBoxLayout, QMainWindow, QWidget, QScrollArea, QDockWidget, QUndoStack, QApplication
+from PyQt5.QtWidgets import QListWidget, QListWidgetItem, QSizePolicy, QMessageBox, QVBoxLayout, QMainWindow, QWidget, QScrollArea, QDockWidget, QUndoStack, QApplication, QLabel, QLineEdit
 from PyQt5.QtCore import pyqtSignal, Qt, QUrl, QRect, QCoreApplication, QDir, QSettings, QByteArray, QEvent, QPoint, QAbstractAnimation, QPropertyAnimation
 from PyQt5.QtQml import QQmlEngine, QQmlComponent
+from pymongo import MongoClient
 
 import resources
 
@@ -43,6 +45,8 @@ class MainWindow(QMainWindow):
         self.readSettings()
         self.dashboard.setExpanded(True)
         self.showDashboard()
+        self.loadDatabase()
+        self.loadClients()
         self.statusBar().showMessage("Ready")
     
     def initGui(self):
@@ -59,10 +63,14 @@ class MainWindow(QMainWindow):
         vbox.addStretch()
 
         content_box = QVBoxLayout()
-        #pages_button = HyperLink("Pages")
-        #posts_button = HyperLink("Posts")
-        #content_box.addWidget(pages_button)
-        #content_box.addWidget(posts_button)
+        filter_label = QLabel("Filter")
+        filter = QLineEdit()
+        self.client_list = QListWidget()
+        self.client_list.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
+        
+        content_box.addWidget(filter_label)
+        content_box.addWidget(filter)
+        content_box.addWidget(self.client_list)
         self.content.addLayout(content_box)
 
         scroll_content = QWidget()
@@ -94,6 +102,20 @@ class MainWindow(QMainWindow):
         
         self.showDock.clicked.connect(self.showMenu)
         self.navigationdock.visibilityChanged.connect(self.dockVisibilityChanged)
+
+    def loadDatabase(self):
+        self.connection = MongoClient("mongodb://localhost:27017/")
+        self.db = self.connection["Maria"]
+
+    def loadClients(self):
+        clients = self.db["Clients"]
+
+        self.client_list.clear()
+        for c in clients.find(): #{"name": {"$regex": u"Hans"}}):
+            item = QListWidgetItem()
+            item.setText(c["name"])
+            item.setData(3, c["_id"])
+            self.client_list.addItem(item)
 
     def showDashboard(self):
         db = Dashboard()
@@ -145,9 +167,6 @@ class MainWindow(QMainWindow):
 
     def dockVisibilityChanged(self, visible):
         self.showDock.setVisible(not visible)
-
-    def createSite(self):
-       pass
 
     def animate(self, item):
         panel = self.centralWidget()
@@ -201,3 +220,16 @@ class MainWindow(QMainWindow):
         if self.content_after_animation:
             self.previewSite(self.content_after_animation)
             self.content_after_animation = None
+
+    def createSite(self):
+        clients = self.db["Clients"]
+      
+        newclient = {
+            "name": "Dirk Müller", 
+            "description": "Lorem ipsum dolor", 
+            "tags": ["heart", "lung"], 
+            "dateOfBirth": datetime(1963, 11, 20)
+        }
+        clients.insert_one(newclient)
+
+        self.loadClients()
