@@ -11,5 +11,6 @@
         <file>images/clients_hover.png</file>
         <file>images/clients_normal.png</file>
         <file>images/clients_selected.png</file>
+        <file>images/image_placeholder.png</file>
     </qresource>
 </RCC>

@@ -30,6 +30,8 @@ from widgets.flatbutton import FlatButton
 from widgets.expander import Expander
 from widgets.hyperlink import HyperLink
 from widgets.dashboard import Dashboard
+from widgets.settingseditor import SettingsEditor
+from widgets.clienteditor import ClientEditor
 from PyQt5.QtWidgets import QListWidget, QListWidgetItem, QSizePolicy, QMessageBox, QVBoxLayout, QMainWindow, QWidget, QScrollArea, QDockWidget, QUndoStack, QApplication, QLabel, QLineEdit
 from PyQt5.QtCore import pyqtSignal, Qt, QUrl, QRect, QCoreApplication, QDir, QSettings, QByteArray, QEvent, QPoint, QAbstractAnimation, QPropertyAnimation
 from PyQt5.QtQml import QQmlEngine, QQmlComponent
@@ -69,6 +71,7 @@ class MainWindow(QMainWindow):
         self.filter.textChanged.connect(self.filterChanged)
         self.client_list = QListWidget()
         self.client_list.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
+        self.client_list.currentItemChanged.connect(self.clientChanged)
         
         content_box.addWidget(filter_label)
         content_box.addWidget(self.filter)
@@ -99,16 +102,28 @@ class MainWindow(QMainWindow):
         self.dashboard.expanded.connect(self.dashboardExpanded)
         self.dashboard.clicked.connect(self.showDashboard)
         self.content.expanded.connect(self.contentExpanded)
+        self.content.clicked.connect(self.showClient)
         
         self.settings.expanded.connect(self.settingsExpanded)
+        self.settings.clicked.connect(self.showSettings)
         
         self.showDock.clicked.connect(self.showMenu)
         self.navigationdock.visibilityChanged.connect(self.dockVisibilityChanged)
+
+        self.client = None
+        self.client_editor = ClientEditor(self)
 
     def showDashboard(self):
         db = Dashboard()
         db.createSite.connect(self.addClient)
         self.setCentralWidget(db)
+
+    def showClient(self):
+        self.setCentralWidget(self.client_editor)
+
+    def showSettings(self):
+        s = SettingsEditor(self)
+        self.setCentralWidget(s)
 
     def setCentralWidget(self, widget):
         old_widget = self.takeCentralWidget()
@@ -123,6 +138,8 @@ class MainWindow(QMainWindow):
         settings = QSettings(QSettings.IniFormat, QSettings.UserScope, QCoreApplication.organizationName(), QCoreApplication.applicationName())
         settings.setValue("geometry", self.saveGeometry())
         settings.setValue("state", self.saveState())
+        settings.setValue("server", self.server)
+        settings.setValue("database", self.database)
        
     def readSettings(self):
         settings = QSettings(QSettings.IniFormat, QSettings.UserScope, QCoreApplication.organizationName(), QCoreApplication.applicationName())
@@ -134,6 +151,13 @@ class MainWindow(QMainWindow):
         else:
             self.restoreGeometry(geometry)
             self.restoreState(settings.value("state"))
+        self.server = settings.value("server")
+        self.database = settings.value("database")
+        if not self.server:
+            self.server = "mongodb://localhost:27017/"
+
+        if not self.database:
+            self.database = "Maria"
 
     def dashboardExpanded(self, value):
         if value:
@@ -213,24 +237,32 @@ class MainWindow(QMainWindow):
         self.loadClients()
 
     def loadDatabase(self):
-        self.connection = MongoClient("mongodb://localhost:27017/")
-        self.db = self.connection["Maria"]
+        print("Trying to connect to server", flush=True)
+        self.connection = MongoClient(self.server)
+        self.db = self.connection[self.database]
+        self.clients = self.db["Clients"]
+
+    def updateClient(self):
+        for i in range(self.client_list.count()):
+            item = self.client_list.item(i)
+            c = item.data(3)
+            if c["_id"] == self.client["_id"]:
+                item.setData(3, self.client)
+                item.setText(self.client["name"])
+                break
 
     def loadClients(self):
-        clients = self.db["Clients"]
-
         self.client_list.clear()
         filter = self.filter.text()
-         
-        for c in clients.find({"name": re.compile(filter, re.IGNORECASE)}):
+        
+        for c in self.clients.find({"name": re.compile(filter, re.IGNORECASE)}).sort('name', 1):
             item = QListWidgetItem()
             item.setText(c["name"])
-            item.setData(3, c["_id"])
+            item.setData(3, c)
             self.client_list.addItem(item)
+        self.client_list.setCurrentRow(0)
 
     def addClient(self):
-        clients = self.db["Clients"]
-      
         newclient = {
             "name": "Vemg Nim", 
             "birthdate": datetime(1963, 11, 20),
@@ -247,3 +279,11 @@ class MainWindow(QMainWindow):
         clients.insert_one(newclient)
 
         self.loadClients()
+
+    def clientChanged(self, item):
+        if item:
+            self.client = item.data(3)
+            self.client_editor.reload()
+        else:
+            self.client = None
+            self.client_editor.reload()

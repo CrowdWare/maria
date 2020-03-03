@@ -48,7 +48,7 @@ class Dashboard(QWidget):
         self.create_button.setToolTip("Add a client")
 
         self.info = QLabel()
-        self.info.setText("Welcome")
+        self.info.setText("Welcome to Maria...")
 
         space = QWidget()
         space2 = QWidget()
