@@ -24,6 +24,7 @@ import pathlib
 import sys
 import re
 import shutil
+from tinydb import TinyDB, Query
 from datetime import datetime
 from importlib import import_module
 from widgets.flatbutton import FlatButton
@@ -35,7 +36,6 @@ from widgets.clienteditor import ClientEditor
 from PyQt5.QtWidgets import QListWidget, QListWidgetItem, QSizePolicy, QMessageBox, QVBoxLayout, QMainWindow, QWidget, QScrollArea, QDockWidget, QUndoStack, QApplication, QLabel, QLineEdit
 from PyQt5.QtCore import pyqtSignal, Qt, QUrl, QRect, QCoreApplication, QDir, QSettings, QByteArray, QEvent, QPoint, QAbstractAnimation, QPropertyAnimation
 from PyQt5.QtQml import QQmlEngine, QQmlComponent
-from pymongo import MongoClient
 
 import resources
 
@@ -237,16 +237,14 @@ class MainWindow(QMainWindow):
         self.loadClients()
 
     def loadDatabase(self):
-        print("Trying to connect to server", flush=True)
-        self.connection = MongoClient(self.server)
-        self.db = self.connection[self.database]
-        self.clients = self.db["Clients"]
+        self.db = TinyDB('maria.json')
+        self.clients = self.db.table('Clients')
 
     def updateClient(self):
         for i in range(self.client_list.count()):
             item = self.client_list.item(i)
             c = item.data(3)
-            if c["_id"] == self.client["_id"]:
+            if c.doc_id == self.client.doc_id:
                 item.setData(3, self.client)
                 item.setText(self.client["name"])
                 break
@@ -255,7 +253,8 @@ class MainWindow(QMainWindow):
         self.client_list.clear()
         filter = self.filter.text()
         
-        for c in self.clients.find({"name": re.compile(filter, re.IGNORECASE)}).sort('name', 1):
+        #for c in self.clients.find({"name": re.compile(filter, re.IGNORECASE)}).sort('name', 1):
+        for c in self.clients:
             item = QListWidgetItem()
             item.setText(c["name"])
             item.setData(3, c)
@@ -265,18 +264,23 @@ class MainWindow(QMainWindow):
     def addClient(self):
         newclient = {
             "name": "Vemg Nim", 
-            "birthdate": datetime(1963, 11, 20),
+            "birthday": QDate(),
+            "birthday_year": 1963,
+            "birthday_month": 11,
+            "birthday_day": 20,
             "profession": "School Teacher",
             "address": "Rxc Nxbut, 00, 1700 Loreum",
-            "mobil": "+000 111111",
+            "mobile": "+000 111111",
             "email": "jhgia@xxx.com",
             "reason": "Buy products",
             "fiscal": "12345",
             "how": "Zen Magazine article",
-            "firstContact": datetime(2020, 7, 23),
+            "first_contact_year": 2020,
+            "first_contact_month": 7,
+            "first_contact_day": 23,
             "notes": "Lorem ipsum dolor"
         }
-        clients.insert_one(newclient)
+        self.clients.insert(newclient)
 
         self.loadClients()
 
