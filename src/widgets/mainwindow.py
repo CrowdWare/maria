@@ -253,8 +253,13 @@ class MainWindow(QMainWindow):
         self.client_list.clear()
         filter = self.filter.text()
         
-        #for c in self.clients.find({"name": re.compile(filter, re.IGNORECASE)}).sort('name', 1):
+        a = []
         for c in self.clients:
+            if filter in c["name"]:
+                a.append(c)
+
+        s = sorted(a, key=namesort)
+        for c in s:
             item = QListWidgetItem()
             item.setText(c["name"])
             item.setData(3, c)
@@ -291,3 +296,9 @@ class MainWindow(QMainWindow):
         else:
             self.client = None
             self.client_editor.reload()
+
+def namesort(json):
+    try:
+        return json['name']
+    except KeyError:
+        return ""

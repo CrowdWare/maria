@@ -95,8 +95,11 @@ class ClientEditor(QWidget):
         self.how.textEdited.connect(self.clientChanged)
         self.notes.textChanged.connect(self.clientChanged)
         self.fiscal.textEdited.connect(self.clientChanged)
+        self.birthday.dateChanged.connect(self.clientChanged)
+        self.firstcontact.dateChanged.connect(self.clientChanged)
 
     def reload(self):
+        self.loading = True
         if self.win.client:
             self.name.setText(self.win.client["name"])
             self.address.setText(self.win.client["address"])
@@ -106,8 +109,9 @@ class ClientEditor(QWidget):
             self.reason.setText(self.win.client["reason"])
             self.how.setText(self.win.client["how"])
             self.notes.setText(self.win.client["notes"])
-            self.birthday.setDate(self.win.client["birthdate_year"])
-            self.firstcontact.setDate(self.win.client["firstContact"])
+            
+            self.birthday.setDate(QDate(self.win.client["birthday_year"], self.win.client["birthday_month"], self.win.client["birthday_day"]))
+            self.firstcontact.setDate(QDate(self.win.client["first_contact_year"], self.win.client["first_contact_month"], self.win.client["first_contact_day"]))
             self.fiscal.setText(self.win.client["fiscal"])
         else:
             self.name.setText("")
@@ -119,10 +123,13 @@ class ClientEditor(QWidget):
             self.how.setText("")
             self.notes.setText("")
             self.fiscal.setText("")
-            #self.birthday.setDate(QDate(1900,1,1))
-            #self.firstcontact.setDate(QDate(1900,1,1))
+            self.birthday.setDate(QDate(1900,1,1))
+            self.firstcontact.setDate(QDate(1900,1,1))
+        self.loading = False
             
     def clientChanged(self):
+        if self.loading:
+            return
         self.win.client["name"] = self.name.text()
         self.win.client["address"] = self.address.text()
         self.win.client["email"] = self.email.text()
@@ -132,5 +139,11 @@ class ClientEditor(QWidget):
         self.win.client["how"] = self.how.text()
         self.win.client["notes"] = self.notes.toPlainText()
         self.win.client["fiscal"] = self.fiscal.text()
+        self.win.client["birthday_year"] = self.birthday.date().year()
+        self.win.client["birthday_month"] = self.birthday.date().month()
+        self.win.client["birthday_day"] = self.birthday.date().day()
+        self.win.client["first_contact_year"] = self.firstcontact.date().year()
+        self.win.client["first_contact_month"] = self.firstcontact.date().month()
+        self.win.client["first_contact_day"] = self.firstcontact.date().day()
         self.win.clients.update(self.win.client, doc_ids=[self.win.client.doc_id])
         self.win.updateClient()
