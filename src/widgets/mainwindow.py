@@ -267,27 +267,32 @@ class MainWindow(QMainWindow):
         self.client_list.setCurrentRow(0)
 
     def addClient(self):
+        now = datetime.now()
         newclient = {
-            "name": "Vemg Nim", 
-            "birthday": QDate(),
-            "birthday_year": 1963,
-            "birthday_month": 11,
-            "birthday_day": 20,
-            "profession": "School Teacher",
-            "address": "Rxc Nxbut, 00, 1700 Loreum",
-            "mobile": "+000 111111",
-            "email": "jhgia@xxx.com",
-            "reason": "Buy products",
-            "fiscal": "12345",
-            "how": "Zen Magazine article",
-            "first_contact_year": 2020,
-            "first_contact_month": 7,
-            "first_contact_day": 23,
-            "notes": "Lorem ipsum dolor"
+            "name": "", 
+            "birthday_year": 1990,
+            "birthday_month": 1,
+            "birthday_day": 1,
+            "profession": "",
+            "address": "",
+            "mobile": "",
+            "email": "",
+            "reason": "",
+            "fiscal": "",
+            "how": "",
+            "first_contact_year": now.year,
+            "first_contact_month": now.month,
+            "first_contact_day": now.day,
+            "notes": ""
         }
         self.clients.insert(newclient)
-
+        self.showClient()
         self.loadClients()
+        q = Query()
+        self.client = self.clients.get(q.name=="")
+        self.client["name"] = ""
+        self.client_editor.reload()
+        
 
     def clientChanged(self, item):
         if item:

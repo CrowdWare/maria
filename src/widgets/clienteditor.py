@@ -31,6 +31,7 @@ class ClientEditor(QWidget):
     def __init__(self, win):
         QWidget.__init__(self)
         self.win = win
+        self.id = 0
         title = QLabel("Client Data")
         fnt = title.font()
         fnt.setPointSize(20)
