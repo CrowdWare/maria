@@ -237,7 +237,9 @@ class MainWindow(QMainWindow):
         self.loadClients()
 
     def loadDatabase(self):
-        self.db = TinyDB('maria.json')
+        #todo...use settings
+        #self.db = TinyDB('maria.json')
+        self.db = TinyDB('/Volumes/TOSHIBA EXT/Maria/maria.json'.replace('\\', ''))
         self.clients = self.db.table('Clients')
 
     def updateClient(self):
