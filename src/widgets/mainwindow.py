@@ -271,6 +271,7 @@ class MainWindow(QMainWindow):
     def addClient(self):
         now = datetime.now()
         newclient = {
+            "number": "",
             "name": "", 
             "birthday_year": 1990,
             "birthday_month": 1,
