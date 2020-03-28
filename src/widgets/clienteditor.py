@@ -39,6 +39,7 @@ class ClientEditor(QWidget):
         title.setFont(fnt)
         self.layout = QGridLayout()
         self.layout.setColumnStretch(0,1)
+        self.number = QLineEdit()
         self.name = QLineEdit()
         self.email = QLineEdit()
         self.profession = QLineEdit()
@@ -60,22 +61,25 @@ class ClientEditor(QWidget):
         self.image.setMinimumWidth(250)
 
         self.layout.addWidget(title, 0, 0, 1, 2)
-        self.layout.addWidget(QLabel("Name"), 1, 0)
-        self.layout.addWidget(self.name, 2, 0)
-        self.layout.addWidget(QLabel("Address"), 3, 0)
-        self.layout.addWidget(self.address, 4, 0)
-        self.layout.addWidget(QLabel("Email"), 5, 0)
-        self.layout.addWidget(self.email, 6, 0)
-        self.layout.addWidget(QLabel("Mobile"), 7, 0)
-        self.layout.addWidget(self.mobile, 8, 0)
-        self.layout.addWidget(QLabel("Profession"), 9, 0)
-        self.layout.addWidget(self.profession, 10, 0)
-        self.layout.addWidget(QLabel("Reason"), 11, 0)
-        self.layout.addWidget(self.reason, 12, 0)
-        self.layout.addWidget(QLabel("How did you get here?"), 13, 0)
-        self.layout.addWidget(self.how, 14, 0)
-        self.layout.addWidget(QLabel("Notes"), 15, 0)
-        self.layout.addWidget(self.notes, 16, 0, 1, 2)
+        self.layout.addWidget(QLabel("Number"), 1, 0)
+        self.layout.addWidget(self.number, 2, 0)
+        
+        self.layout.addWidget(QLabel("Name"), 3, 0)
+        self.layout.addWidget(self.name, 4, 0)
+        self.layout.addWidget(QLabel("Address"), 5, 0)
+        self.layout.addWidget(self.address, 6, 0)
+        self.layout.addWidget(QLabel("Email"), 7, 0)
+        self.layout.addWidget(self.email, 8, 0)
+        self.layout.addWidget(QLabel("Mobile"), 9, 0)
+        self.layout.addWidget(self.mobile, 10, 0)
+        self.layout.addWidget(QLabel("Profession"), 11, 0)
+        self.layout.addWidget(self.profession, 12, 0)
+        self.layout.addWidget(QLabel("Reason"), 13, 0)
+        self.layout.addWidget(self.reason, 14, 0)
+        self.layout.addWidget(QLabel("How did you get here?"), 15, 0)
+        self.layout.addWidget(self.how, 16, 0)
+        self.layout.addWidget(QLabel("Notes"), 17, 0)
+        self.layout.addWidget(self.notes, 18, 0, 1, 2)
         self.layout.addWidget(self.image, 2, 1, 7, 1)
         self.layout.addWidget(QLabel("Birhday"), 9, 1)
         self.layout.addWidget(self.birthday, 10, 1)
@@ -86,7 +90,7 @@ class ClientEditor(QWidget):
         self.setLayout(self.layout)
 
         self.reload()
-
+        self.number.textEdited.connect(self.clientChanged)
         self.name.textEdited.connect(self.clientChanged)
         self.address.textEdited.connect(self.clientChanged)
         self.email.textEdited.connect(self.clientChanged)
@@ -102,6 +106,7 @@ class ClientEditor(QWidget):
     def reload(self):
         self.loading = True
         if self.win.client:
+            self.number.setText(self.win.client["number"])
             self.name.setText(self.win.client["name"])
             self.address.setText(self.win.client["address"])
             self.email.setText(self.win.client["email"])
@@ -115,6 +120,7 @@ class ClientEditor(QWidget):
             self.firstcontact.setDate(QDate(self.win.client["first_contact_year"], self.win.client["first_contact_month"], self.win.client["first_contact_day"]))
             self.fiscal.setText(self.win.client["fiscal"])
         else:
+            self.number.setText("")
             self.name.setText("")
             self.address.setText("")
             self.email.setText("")
@@ -131,6 +137,7 @@ class ClientEditor(QWidget):
     def clientChanged(self):
         if self.loading:
             return
+        self.win.client["number"] = self.number.text()
         self.win.client["name"] = self.name.text()
         self.win.client["address"] = self.address.text()
         self.win.client["email"] = self.email.text()
