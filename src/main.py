@@ -42,7 +42,7 @@ if __name__ == "__main__":
    
     #qmlRegisterType(Column, 'Maria', 2, 0, 'Column')
 
-    font = QFont("Sans Serif", 10)
+    font = QFont("Sans Serif", 10) # 15 on Mac
     app.setFont(font)
 
     p = app.palette()
