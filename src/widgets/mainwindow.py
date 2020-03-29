@@ -138,8 +138,7 @@ class MainWindow(QMainWindow):
         settings = QSettings(QSettings.IniFormat, QSettings.UserScope, QCoreApplication.organizationName(), QCoreApplication.applicationName())
         settings.setValue("geometry", self.saveGeometry())
         settings.setValue("state", self.saveState())
-        settings.setValue("server", self.server)
-        settings.setValue("database", self.database)
+        settings.setValue("databaseFile", self.databaseFile)
        
     def readSettings(self):
         settings = QSettings(QSettings.IniFormat, QSettings.UserScope, QCoreApplication.organizationName(), QCoreApplication.applicationName())
@@ -151,13 +150,9 @@ class MainWindow(QMainWindow):
         else:
             self.restoreGeometry(geometry)
             self.restoreState(settings.value("state"))
-        self.server = settings.value("server")
-        self.database = settings.value("database")
-        if not self.server:
-            self.server = "mongodb://localhost:27017/"
-
-        if not self.database:
-            self.database = "Maria"
+        self.databaseFile = settings.value("databaseFile")
+        if not self.databaseFile:
+            self.databaseFile = ""
 
     def dashboardExpanded(self, value):
         if value:
@@ -237,9 +232,7 @@ class MainWindow(QMainWindow):
         self.loadClients()
 
     def loadDatabase(self):
-        #todo...use settings
-        #self.db = TinyDB('maria.json')
-        self.db = TinyDB('/Volumes/TOSHIBA EXT/Maria/maria.json'.replace('\\', ''))
+        self.db = TinyDB(self.databaseFile)
         self.clients = self.db.table('Clients')
 
     def updateClient(self):
