@@ -36,20 +36,19 @@ class SettingsEditor(QWidget):
         title.setFont(fnt)
         self.layout = QGridLayout()
         self.database = QLineEdit()
-        self.server = QLineEdit()
-        self.database.setText(win.database)
-        self.server.setText(win.server)
+        self.databaseFile = QLineEdit()
+        self.databaseFile.setText(win.databaseFile)
 
         vbox = QVBoxLayout()
         vbox.addStretch()
 
         self.layout.addWidget(title, 0, 0)
-        self.layout.addWidget(QLabel("Database"), 1, 0)
-        self.layout.addWidget(self.database, 2, 0, 1, 3)
-        self.layout.addWidget(QLabel("Server"), 3, 0)
-        self.layout.addWidget(self.server, 4, 0, 1, 3)
+        self.layout.addWidget(QLabel("Database File"), 1, 0)
+        self.layout.addWidget(self.databaseFile, 2, 0, 1, 3)
         self.layout.addLayout(vbox, 16, 0)
         self.setLayout(self.layout)
 
-    def save(self):
-        pass
+        self.databaseFile.textEdited.connect(self.settingsChanged)
+
+    def settingsChanged(self):
+        self.win.databaseFile = self.databaseFile.text()
