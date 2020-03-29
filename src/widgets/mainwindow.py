@@ -33,6 +33,7 @@ from widgets.hyperlink import HyperLink
 from widgets.dashboard import Dashboard
 from widgets.settingseditor import SettingsEditor
 from widgets.clienteditor import ClientEditor
+from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QListWidget, QListWidgetItem, QSizePolicy, QMessageBox, QVBoxLayout, QMainWindow, QWidget, QScrollArea, QDockWidget, QUndoStack, QApplication, QLabel, QLineEdit
 from PyQt5.QtCore import pyqtSignal, Qt, QUrl, QRect, QCoreApplication, QDir, QSettings, QByteArray, QEvent, QPoint, QAbstractAnimation, QPropertyAnimation
 from PyQt5.QtQml import QQmlEngine, QQmlComponent
@@ -42,8 +43,9 @@ import resources
 class MainWindow(QMainWindow):
     siteLoaded = pyqtSignal(object)
 
-    def __init__(self):
+    def __init__(self, app):
         QMainWindow.__init__(self)
+        self.app = app
         self.initGui()
         self.readSettings()
         self.dashboard.setExpanded(True)
@@ -139,6 +141,7 @@ class MainWindow(QMainWindow):
         settings.setValue("geometry", self.saveGeometry())
         settings.setValue("state", self.saveState())
         settings.setValue("databaseFile", self.databaseFile)
+        settings.setValue("fontSize", str(self.fontSize))
        
     def readSettings(self):
         settings = QSettings(QSettings.IniFormat, QSettings.UserScope, QCoreApplication.organizationName(), QCoreApplication.applicationName())
@@ -152,7 +155,13 @@ class MainWindow(QMainWindow):
             self.restoreState(settings.value("state"))
         self.databaseFile = settings.value("databaseFile")
         if not self.databaseFile:
-            self.databaseFile = ""
+            self.databaseFile = "maria.json"
+        fs = settings.value("fontSize")
+        if not fs:
+            fs = 10
+        self.fontSize = int(fs)
+        font = QFont("Sans Serif", self.fontSize)
+        self.app.setFont(font)
 
     def dashboardExpanded(self, value):
         if value:

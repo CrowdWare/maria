@@ -42,9 +42,6 @@ if __name__ == "__main__":
    
     #qmlRegisterType(Column, 'Maria', 2, 0, 'Column')
 
-    font = QFont("Sans Serif", 10) # 15 on Mac
-    app.setFont(font)
-
     p = app.palette()
     p.setColor(QPalette.Window, QColor(53, 53, 53))
     p.setColor(QPalette.WindowText, Qt.white)
@@ -63,6 +60,6 @@ if __name__ == "__main__":
     p.setColor(QPalette.Link, QColor("#bbb"))
     app.setPalette(p)
     app.setWindowIcon(QIcon(":/images/logo.svg"))        
-    win = MainWindow()
+    win = MainWindow(app)
     win.show()
     sys.exit(app.exec_())
